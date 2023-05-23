@@ -1,9 +1,9 @@
 ---
 license: Apache License 2.0
 deployspec:
-    cpu: 4
+    cpu: 6
     gpu: 1
-    memory: 8000
+    memory: 55000
     instance: 1
 domain:
 - multi-modal
