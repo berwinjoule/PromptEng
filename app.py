@@ -7,8 +7,7 @@ import torch
 
 model_id = "runwayml/stable-diffusion-v1-5"
 pipe = StableDiffusionPipeline.from_pretrained(model_id)
-if torch.cuda.is_available():
-    pipe = pipe.to("cuda")
+pipe = pipe.to("cuda")
 
 
 def inference(text):
