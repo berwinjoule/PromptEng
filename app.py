@@ -25,7 +25,7 @@ def inference(text):
     except:
         generated_text = text
     image1 = pipe(text).images[0]
-    image2 = pipe(generated_text).images[0]
+    image2 = pipe(generated_text, num_inference_steps=20).images[0]
     return generated_text, image1, image2
 
 
