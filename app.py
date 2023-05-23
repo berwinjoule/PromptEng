@@ -33,7 +33,7 @@ demo = gr.Blocks()
 with demo:
     with gr.Row():
         input_prompt = gr.Textbox(label="请输入您的prompt", 
-                                    value="a bus",
+                                    value="a girl",
                                     lines=3)
         b1 = gr.Button("开始生成")
         generated_txt = gr.Textbox(label="我们为您生成的prompt",
