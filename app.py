@@ -1,7 +1,7 @@
 import gradio as gr
 import requests
 import json
-from diffusers import StableDiffusionPipeline
+from diffusers import DPMSolverMultistepScheduler
 import torch
 import inspect
 import re
@@ -1477,6 +1477,7 @@ class StableDiffusionLongPromptWeightingPipeline(
 
 model_id = "runwayml/stable-diffusion-v1-5"
 pipe = StableDiffusionLongPromptWeightingPipeline.from_pretrained(model_id, torch_dtype=torch.float16)
+pipe.scheduler = DPMSolverMultistepScheduler.from_config(pipe.scheduler.config)
 pipe = pipe.to("cuda")
 
 def generate_prompt(text):
