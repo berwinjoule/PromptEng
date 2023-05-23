@@ -1479,8 +1479,7 @@ model_id = "runwayml/stable-diffusion-v1-5"
 pipe = StableDiffusionLongPromptWeightingPipeline.from_pretrained(model_id, torch_dtype=torch.float16)
 pipe = pipe.to("cuda")
 
-
-def inference(text):
+def generate_prompt(text):
     service_url = 'http://1502318844610933.cn-shanghai.pai-eas.aliyuncs.com/api/predict/bloom1b1_prompteng'
     datas = json.dumps([{
         "content": f"Instruction: Give a simple description of the image to generate a drawing prompt.\nInput: {text}.\nOutput:"
@@ -1493,27 +1492,39 @@ def inference(text):
         generated_text = json.loads(r.text)[0]
     except:
         generated_text = text
-    image1 = pipe.text2img(text, num_inference_steps=20).images[0]
+    return generated_text
+
+
+def generate_image(original_prompt, generated_prompt):
+    image1 = pipe.text2img(original_prompt, num_inference_steps=20).images[0]
     image2 = pipe.text2img(
-        generated_text,
+        generated_prompt,
         negative_prompt="paintings, sketches, (worst quality:2), (low quality:2), (normal quality:2), lowres, ((monochrome)), (grayscale:1.2), skin spots, acnes, skin blemishes, age spot, glans,extra fingers,fewer fingers,(watermark:1.2),(letters:1.2),(nsfw:1.2),teeth",
         num_inference_steps=20
     ).images[0]
-    return generated_text, image1, image2
+    return image1, image2
 
 
 demo = gr.Blocks()
 with demo:
+    # row 1 两个文本框，一个按钮，生成prompt
     with gr.Row():
-        input_prompt = gr.Textbox(label="请输入您的prompt", 
+        original_prompt = gr.Textbox(label="请输入您的prompt", 
                                     value="a girl",
                                     lines=3)
-        b1 = gr.Button("开始生成")
-        generated_txt = gr.Textbox(label="我们为您生成的prompt",
+        b1 = gr.Button("生成prompt")
+        generated_prompt = gr.Textbox(label="我们为您生成的prompt",
+                                    value="a beautiful girl with short white hair, sharp focus, intricate, digital painting, artstation, highly detailed, ambient lighting, portrait by Studio Ghibli, artgerm, Greg Rutkowski, Alphonse Mucha, concept art, sharp focus, ArtStation",
                                     lines=3)
+    # row 2 一个按钮，生成图片
+    with gr.Row():
+        b2 = gr.Button("生成图像")
+    # row 3 两个图片框
     with gr.Row():
         image1 = gr.Image(label = '使用原prompt生成的图像')
         image2 = gr.Image(label = '使用我们生成的prompt生成的图像')
-    b1.click(inference, inputs=[input_prompt], outputs=[generated_txt, image1, image2]) 
+    
+    b1.click(generate_prompt, inputs=[original_prompt], outputs=[generated_prompt])
+    b2.click(generate_image, inputs=[original_prompt, generated_prompt], outputs=[image1, image2])
     
 demo.launch(enable_queue=True)
