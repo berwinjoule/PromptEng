@@ -21,7 +21,7 @@ deployspec: #部署配置，默认上限GPU4核、内存8GB、无GPU、单实例
 # 内存（单位MB)
   memory: 8000
 # gpu个数
-  gpu: 0
+  gpu: 1
 # gpu共享显存（单位GB，当gpu=0时生效，当gpu>0时显存独占，此配置不生效）
   gpu_memory: 0
 # 实例数
