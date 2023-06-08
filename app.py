@@ -1486,9 +1486,9 @@ pipe = pipe.to("cuda")
 
 def generate_prompt(raw_prompt):
     input = f'Instruction: Give a simple description of the image to generate a drawing prompt.\nInput: {raw_prompt}\nOutput:'
-    input_ids = tokenizer.encode(input, return_tensors='pt').cuda()
+    input_ids = prompt_tokenizer.encode(input, return_tensors='pt').cuda()
 
-    outputs = model.generate(
+    outputs = prompt_model.generate(
         input_ids,
         max_length=384,
         do_sample=True,
@@ -1498,7 +1498,7 @@ def generate_prompt(raw_prompt):
         repetition_penalty=1.2,
         num_return_sequences=1)
 
-    prompts = tokenizer.batch_decode(outputs[:, input_ids.size(1):], skip_special_tokens=True)
+    prompts = prompt_tokenizer.batch_decode(outputs[:, input_ids.size(1):], skip_special_tokens=True)
     prompts = [p.strip() for p in prompts]
     return prompts[0]
 
