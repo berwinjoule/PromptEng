@@ -28,6 +28,7 @@ from diffusers.utils import (
     logging,
     randn_tensor,
 )
+from transformers import AutoTokenizer, AutoModelForCausalLM
 
 
 # ------------------------------------------------------------------------------
@@ -1475,25 +1476,31 @@ class StableDiffusionLongPromptWeightingPipeline(
         )
 
 
+prompt_tokenizer = AutoTokenizer.from_pretrained('alibaba-pai/pai-bloom-1b1-text2prompt-sd')
+prompt_model = AutoModelForCausalLM.from_pretrained('alibaba-pai/pai-bloom-1b1-text2prompt-sd').eval().cuda()
+
 model_id = "runwayml/stable-diffusion-v1-5"
 pipe = StableDiffusionLongPromptWeightingPipeline.from_pretrained(model_id, torch_dtype=torch.float16)
 pipe.scheduler = DPMSolverMultistepScheduler.from_config(pipe.scheduler.config)
 pipe = pipe.to("cuda")
 
-def generate_prompt(text):
-    service_url = 'http://1502318844610933.cn-shanghai.pai-eas.aliyuncs.com/api/predict/bloom1b1_prompteng'
-    datas = json.dumps([{
-        "content": f"Instruction: Give a simple description of the image to generate a drawing prompt.\nInput: {text}.\nOutput:"
-    }])
-    head = {
-        "Authorization": "N2ExMGE2ZjQ0YjMwMTYzYmFkZGJjZDgyZmQyNmQ1NTMxNGJmODNkMw=="
-    }
-    try:
-        r = requests.post(service_url, data=datas, headers=head)
-        generated_text = json.loads(r.text)[0]
-    except:
-        generated_text = text
-    return generated_text
+def generate_prompt(raw_prompt):
+    input = f'Instruction: Give a simple description of the image to generate a drawing prompt.\nInput: {raw_prompt}\nOutput:'
+    input_ids = tokenizer.encode(input, return_tensors='pt').cuda()
+
+    outputs = model.generate(
+        input_ids,
+        max_length=384,
+        do_sample=True,
+        temperature=1.0,
+        top_k=50,
+        top_p=0.95,
+        repetition_penalty=1.2,
+        num_return_sequences=1)
+
+    prompts = tokenizer.batch_decode(outputs[:, input_ids.size(1):], skip_special_tokens=True)
+    prompts = [p.strip() for p in prompts]
+    return prompts[0]
 
 
 def generate_image(original_prompt, generated_prompt):
