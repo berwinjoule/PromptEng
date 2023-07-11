@@ -5,7 +5,7 @@ import uvicorn
 
 
 # 指定你想要使用的GPU设备，假设你有多个GPU设备，你想要在第一个设备上运行模型
-device = torch.device("cuda:3" if torch.cuda.is_available() else "cpu")
+device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 # device = torch.device("cpu") # CPU上运行模型，初步测试耗时约为GPU的5倍
 
 app = FastAPI()
