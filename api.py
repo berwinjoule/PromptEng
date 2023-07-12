@@ -46,6 +46,7 @@ if __name__ == "__main__":
     load_dotenv(dotenv_path=env_file)
     host = os.getenv("API_HOST","0.0.0.0")
     port = int(os.getenv("API_PORT",7861))
-    workers = int(os.getenv("API_WORKERS",4))
+    workers = int(os.getenv("API_WORKERS",1)) # workers=1，目前看work数大于1的话，会出现问题
 
+    print(f"Starting server on {host}:{port} with {workers} workers")
     uvicorn.run(app, host=host, port=port, workers=workers)
