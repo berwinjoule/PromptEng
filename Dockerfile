@@ -10,8 +10,10 @@ COPY . .
 # 安装依赖项
 RUN pip install --no-cache-dir -r requirements.txt
 
+RUN git clone https://huggingface.co/alibaba-pai/pai-bloom-1b1-text2prompt-sd
+
 # 暴露端口
-EXPOSE 18004
+EXPOSE 7861
 
 # 运行应用程序
 CMD ["python", "api.py"]
