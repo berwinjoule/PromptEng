@@ -35,7 +35,8 @@ async def root():
     return {"message": "Hello World"}
 
 @app.get("/generate_prompt/")
-async def generate_prompt(raw_prompt: str = Depends(verify)):
+async def generate_prompt(raw_prompt: str, verified: bool = Depends(verify)):
+    logging.info(f"raw_prompt: {raw_prompt}")
     input = f'Instruction: Give a simple description of the image to generate a drawing prompt.\nInput: {raw_prompt}\nOutput:'
     input_ids = tokenizer.encode(input, return_tensors='pt').to(device)
 
