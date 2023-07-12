@@ -4,3 +4,4 @@ accelerate
 torch
 fastapi
 uvicorn
+python-dotenv
