@@ -2,6 +2,7 @@ from fastapi import FastAPI
 from transformers import AutoTokenizer, AutoModelForCausalLM
 import torch
 import uvicorn
+from uvicorn import Config
 
 
 # 指定你想要使用的GPU设备，假设你有多个GPU设备，你想要在第一个设备上运行模型
@@ -38,4 +39,4 @@ async def generate_prompt(raw_prompt: str):
     return {"prompt": prompts[0]}
 
 if __name__ == "__main__":
-    uvicorn.run(app, host="0.0.0.0", port=18004)
+    uvicorn.run(app, env_file=".env")
