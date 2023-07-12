@@ -2,7 +2,9 @@ from fastapi import FastAPI
 from transformers import AutoTokenizer, AutoModelForCausalLM
 import torch
 import uvicorn
-from uvicorn import Config
+from dotenv import load_dotenv
+import logging
+import os
 
 
 # 指定你想要使用的GPU设备，假设你有多个GPU设备，你想要在第一个设备上运行模型
@@ -39,4 +41,11 @@ async def generate_prompt(raw_prompt: str):
     return {"prompt": prompts[0]}
 
 if __name__ == "__main__":
-    uvicorn.run(app, env_file=".env")
+    env_file = ".env"
+    logging.info("Loading environment from '%s'", env_file)
+    load_dotenv(dotenv_path=env_file)
+    host = os.getenv("API_HOST","0.0.0.0")
+    port = int(os.getenv("API_PORT",7861))
+    workers = int(os.getenv("API_WORKERS",4))
+
+    uvicorn.run(app, host=host, port=port, workers=workers)
