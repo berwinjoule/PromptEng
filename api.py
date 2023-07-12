@@ -1,4 +1,5 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Depends, HTTPException
+from fastapi.security import HTTPBasic, HTTPBasicCredentials
 from transformers import AutoTokenizer, AutoModelForCausalLM
 import torch
 import uvicorn
@@ -12,17 +13,29 @@ device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 # device = torch.device("cpu") # CPU上运行模型，初步测试耗时约为GPU的5倍
 
 app = FastAPI()
+security = HTTPBasic()
+
+env_file = ".env"
+logging.info("Loading environment from '%s'", env_file)
+load_dotenv(dotenv_path=env_file)
 
 tokenizer = AutoTokenizer.from_pretrained('./pai-bloom-1b1-text2prompt-sd/')
 model = AutoModelForCausalLM.from_pretrained('./pai-bloom-1b1-text2prompt-sd/').eval().cuda()
 model.to(device)
+
+def verify(credentials: HTTPBasicCredentials = Depends(security)):
+    correct_username = os.getenv("API_USERNAME","admin")
+    correct_password = os.getenv("API_PASSWD","passwd")
+    if credentials.username != correct_username or credentials.password != correct_password:
+        raise HTTPException(status_code=401, detail="Incorrect username or password")
+    return True
 
 @app.get("/")
 async def root():
     return {"message": "Hello World"}
 
 @app.get("/generate_prompt/")
-async def generate_prompt(raw_prompt: str):
+async def generate_prompt(raw_prompt: str = Depends(verify)):
     input = f'Instruction: Give a simple description of the image to generate a drawing prompt.\nInput: {raw_prompt}\nOutput:'
     input_ids = tokenizer.encode(input, return_tensors='pt').to(device)
 
@@ -41,9 +54,6 @@ async def generate_prompt(raw_prompt: str):
     return {"prompt": prompts[0]}
 
 if __name__ == "__main__":
-    env_file = ".env"
-    logging.info("Loading environment from '%s'", env_file)
-    load_dotenv(dotenv_path=env_file)
     host = os.getenv("API_HOST","0.0.0.0")
     port = int(os.getenv("API_PORT",7861))
     workers = int(os.getenv("API_WORKERS",1)) # workers=1，目前看work数大于1的话，会出现问题
