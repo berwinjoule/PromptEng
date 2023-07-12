@@ -13,8 +13,8 @@ device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
 app = FastAPI()
 
-tokenizer = AutoTokenizer.from_pretrained('pai-bloom-1b1-text2prompt-sd')
-model = AutoModelForCausalLM.from_pretrained('pai-bloom-1b1-text2prompt-sd').eval().cuda()
+tokenizer = AutoTokenizer.from_pretrained('./pai-bloom-1b1-text2prompt-sd/')
+model = AutoModelForCausalLM.from_pretrained('./pai-bloom-1b1-text2prompt-sd/').eval().cuda()
 model.to(device)
 
 @app.get("/")
